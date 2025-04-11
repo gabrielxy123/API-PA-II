@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+    use Illuminate\Http\Request;
+    use Illuminate\Support\Facades\Auth;
+    use Illuminate\Support\Facades\Storage;
+    use App\Models\User;
+    use Illuminate\Support\Facades\URL;
 
-class AkunUserController extends Controller
+
+class   AkunUserController extends Controller
 {
     public function getUserProfile(Request $request)
     {
@@ -227,6 +230,20 @@ class AkunUserController extends Controller
                 'message' => 'Failed to update profile image URL: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function saveImage($image, $path = 'public')
+    {
+        if($image){
+            return null;
+        }
+
+        $filename = time().'.png';
+        //save image
+        Storage::disk($path)->put($filename, base64_decode($image));
+
+        //return URL
+        return URL::to('/').'/storage/'.$path.'/'.$filename;
     }
 }
 

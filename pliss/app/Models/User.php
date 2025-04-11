@@ -47,4 +47,15 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+
+    /**
+     * Relasi ke model toko
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function tokos() {
+        return $this ->hasOne(Toko::class); 
+    }
+    
 }

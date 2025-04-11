@@ -64,7 +64,7 @@ class AuthController extends Controller
 
         // Ambil user dan buat token
         $user = User::where('name', $name)->first();
-        
+
         // Process profile image URL
         $profileImage = $user->profile_image;
         if ($profileImage) {
@@ -75,19 +75,22 @@ class AuthController extends Controller
         } else {
             $profileImage = ''; // Empty string if no image
         }
-        
-        // Create a custom user object with the properly formatted profile image
+
+        // Buat data user dengan role
         $userData = $user->toArray();
         $userData['profile_image'] = $profileImage;
-        
+
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // Return user and token
+        // Return user and token with role info
         return response()->json([
             'user' => $userData,
+            'role' => $user->role, // Sertakan role dalam respons
             'token' => $token,
+            'message' => 'Login berhasil',
         ], 200);
     }
+
 
 
     public function index()

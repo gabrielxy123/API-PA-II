@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\URL;
+
 
 class UserController extends Controller
 {
@@ -85,5 +87,19 @@ class UserController extends Controller
                 'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    public function saveImage($image, $path = 'public')
+    {
+        if($image){
+            return null;
+        }
+
+        $filename = time().'.png';
+        //save image
+        Storage::disk($path)->put($filename, base64_decode($image));
+
+        //return URL
+        return URL::to('/').'/storage/'.$path.'/'.$filename;
     }
 } 
