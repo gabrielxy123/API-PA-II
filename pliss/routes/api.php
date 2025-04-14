@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PersonController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AkunUserController;
+use App\Http\Controllers\TokoController;
 use App\Http\Controllers\UserController;
 
 // User authentication routes
@@ -26,6 +27,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Profile Image Upload Route
     Route::post('/upload-profile-image', [UserController::class, 'uploadProfileImage']);
+
+    // Route untuk mendaftar toko
+    Route::post("/store", [TokoController::class, 'store']);
+    Route::post("/update-store", [TokoController::class, 'update']);
 });
 
 // Test routes for Postman

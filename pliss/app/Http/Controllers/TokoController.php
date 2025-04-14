@@ -20,24 +20,26 @@ class TokoController extends Controller
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id|unique:tokos,user_id',
-            'nama' => 'required',
-            'no_telp' => 'required',
-            'email' => 'required|email|unique:tokos,email',
-            'deskripsi' => 'nullable',
-            'jalan' => 'required',
-            'kecamatan' => 'required',
-            'kabupaten' => 'required',
-            'provinsi' => 'required',
-            'waktu_buka' => 'required',
-            'waktu_tutup' => 'required',
+            'nama' => 'required|string|max:255',
+            'noTelp' => 'required|string|regex:/^[0-9]{10,15}$/', // Validasi nomor telepon
+            'email' => 'required|email|unique:tokos,email|max:255',
+            'deskripsi' => 'nullable|string|max:500', // Maksimal 500 karakter untuk deskripsi
+            'jalan' => 'required|string|max:255',
+            'kecamatan' => 'required|string|max:255',
+            'kabupaten' => 'required|string|max:255',
+            'provinsi' => 'required|string|max:255',
+            'waktuBuka' => 'required|date_format:H:i:s', // Format waktu (24 jam)
+            'waktuTutup' => 'required|date_format:H:i:s|after:waktuBuka', // Tutup harus setelah buka
         ]);
 
         $toko = Toko::create($validated);
+
         return response()->json([
             'message' => 'Toko berhasil dibuat',
             'data' => $toko
         ], 201);
     }
+
 
     public function show(Toko $toko)
     {
@@ -52,7 +54,7 @@ class TokoController extends Controller
         $validated = $request->validate([
             'nama' => 'sometimes|required',
             'no_telp' => 'sometimes|required',
-            'email' => 'sometimes|required|email|unique:tokos,email,'.$toko->id,
+            'email' => 'sometimes|required|email|unique:tokos,email,' . $toko->id,
             'deskripsi' => 'nullable',
             'jalan' => 'sometimes|required',
             'kecamatan' => 'sometimes|required',
