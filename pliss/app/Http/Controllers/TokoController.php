@@ -10,7 +10,10 @@ class TokoController extends Controller
     public function index()
     {
         $tokos = Toko::all();
-        return response()->json($tokos);
+        return response()->json([
+            'message' => 'Data toko berhasil diambil',
+            'data' => $tokos
+        ], 200);
     }
 
     public function store(Request $request)
@@ -30,12 +33,18 @@ class TokoController extends Controller
         ]);
 
         $toko = Toko::create($validated);
-        return response()->json($toko, 201);
+        return response()->json([
+            'message' => 'Toko berhasil dibuat',
+            'data' => $toko
+        ], 201);
     }
 
     public function show(Toko $toko)
     {
-        return response()->json($toko);
+        return response()->json([
+            'message' => 'Detail toko berhasil diambil',
+            'data' => $toko
+        ], 200);
     }
 
     public function update(Request $request, Toko $toko)
@@ -54,12 +63,18 @@ class TokoController extends Controller
         ]);
 
         $toko->update($validated);
-        return response()->json($toko);
+        return response()->json([
+            'message' => 'Toko berhasil diperbarui',
+            'data' => $toko
+        ], 200);
     }
 
     public function destroy(Toko $toko)
     {
         $toko->delete();
-        return response()->json(['message' => 'Toko berhasil dihapus']);
+        return response()->json([
+            'message' => 'Toko berhasil dihapus',
+            'data' => null
+        ], 200);
     }
 }
