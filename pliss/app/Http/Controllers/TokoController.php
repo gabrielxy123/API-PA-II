@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Toko;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TokoController extends Controller
 {
@@ -18,28 +19,52 @@ class TokoController extends Controller
 
     public function store(Request $request)
     {
+        // Pastikan user login
+        if (!Auth::check()) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id|unique:tokos,user_id',
             'nama' => 'required|string|max:255',
-            'noTelp' => 'required|string|regex:/^[0-9]{10,15}$/', // Validasi nomor telepon
+            'noTelp' => 'required|string|regex:/^[0-9]{10,15}$/',
             'email' => 'required|email|unique:tokos,email|max:255',
-            'deskripsi' => 'nullable|string|max:500', // Maksimal 500 karakter untuk deskripsi
+            'deskripsi' => 'nullable|string|max:500',
             'jalan' => 'required|string|max:255',
             'kecamatan' => 'required|string|max:255',
             'kabupaten' => 'required|string|max:255',
             'provinsi' => 'required|string|max:255',
-            'waktuBuka' => 'required|date_format:H:i:s', // Format waktu (24 jam)
-            'waktuTutup' => 'required|date_format:H:i:s|after:waktuBuka', // Tutup harus setelah buka
+            'waktuBuka' => 'required|date_format:H:i:s',
+            'waktuTutup' => 'required|date_format:H:i:s|after:waktuBuka',
         ]);
 
-        $toko = Toko::create($validated);
+        $userId = Auth::id();
+
+        if (Toko::where('userID', $userId)->exists()) {
+            return response()->json([
+                'message' => 'User sudah memiliki toko'
+            ], 422);
+        }
+
+        // Menyimpan data toko
+        $toko = Toko::create([
+            'userID' => $userId,
+            'nama' => $validated['nama'],
+            'noTelp' => $validated['noTelp'],
+            'email' => $validated['email'],
+            'deskripsi' => $validated['deskripsi'] ?? null,
+            'jalan' => $validated['jalan'],
+            'kecamatan' => $validated['kecamatan'],
+            'kabupaten' => $validated['kabupaten'],
+            'provinsi' => $validated['provinsi'],
+            'waktuBuka' => $validated['waktuBuka'],
+            'waktuTutup' => $validated['waktuTutup'],
+        ]);
 
         return response()->json([
             'message' => 'Toko berhasil dibuat',
             'data' => $toko
         ], 201);
     }
-
 
     public function show(Toko $toko)
     {

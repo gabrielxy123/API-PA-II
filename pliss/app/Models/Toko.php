@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Toko extends Model
 {
     protected $fillable = [
-        'user_id',
+        'userID',
         'nama',
         'noTelp',
         'email',
@@ -22,6 +22,6 @@ class Toko extends Model
 
     //relasi ke tabel user
     public function user() {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'userID');
     }
 }
