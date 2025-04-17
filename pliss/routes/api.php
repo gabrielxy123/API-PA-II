@@ -35,6 +35,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route untuk mendaftar toko
     Route::get("/index-toko", [TokoController::class, 'index']);
 
+    //Route untuk mengupload bukti pembayaran
+    Route::post('/upload-bukti-bayar', [TokoController::class, 'uploadBuktiPembayaran']);
+
+
 
 });
 

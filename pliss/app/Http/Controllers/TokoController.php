@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Toko;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 class TokoController extends Controller
 {
@@ -64,6 +67,101 @@ class TokoController extends Controller
             'message' => 'Toko berhasil dibuat',
             'data' => $toko
         ], 201);
+    }   
+
+    public function uploadBuktiPembayaran(Request $request)
+    {
+        try {
+            // Validasi apakah file diunggah
+            if (!$request->hasFile('buktiBayar')) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'No image file uploaded'
+                ], 400);
+            }
+
+            $image = $request->file('buktiBayar');
+
+            // Validasi tipe file
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            if (!in_array($image->getMimeType(), $allowedTypes)) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid file type. Only JPG, JPEG, and PNG are allowed.'
+                ], 400);
+            }
+
+            // Validasi ukuran file (maksimum 5MB)
+            if ($image->getSize() > 5 * 1024 * 1024) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'File size too large. Maximum size is 5MB.'
+                ], 400);
+            }
+
+            // Generate nama file unik
+            $filename = time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+
+            // Simpan file ke storage publik
+            $path = $image->storeAs('public/bukti_pembayaran', $filename);
+
+            if (!$path) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to store image'
+                ], 500);
+            }
+
+            // Dapatkan toko milik user yang sedang login
+            $userId = Auth::id();
+            $toko = Toko::where('userID', $userId)->first();
+
+            if (!$toko) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Toko tidak ditemukan'
+                ], 404);
+            }
+
+            // Hapus bukti bayar lama jika ada
+            if ($toko->buktiBayar) {
+                $oldPath = str_replace(url('/storage/'), 'public/', $toko->buktiBayar);
+                if (Storage::exists($oldPath)) {
+                    Storage::delete($oldPath);
+                }
+            }
+
+            // Update URL bukti bayar di database
+            $toko->buktiBayar = url('/storage/bukti_pembayaran/' . $filename);
+            $toko->save();
+
+            return response()->json([
+                'status' => 'success',
+                'image_url' => $toko->buktiBayar,
+                'message' => 'Bukti pembayaran uploaded successfully'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error uploading bukti pembayaran: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+    public function saveBuktiPembayaran($image, $path = 'public')
+    {
+        if ($image) {
+            return null;
+        }
+
+        $filename = time() . '.png';
+        //save image
+        Storage::disk($path)->put($filename, base64_decode($image));
+
+        //return URL
+        return URL::to('/') . '/storage/' . $path . '/' . $filename;
     }
 
     public function show(Toko $toko)
